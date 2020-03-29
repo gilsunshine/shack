@@ -70,6 +70,7 @@
       let zoomSpeed = 20;
 			let materials = [];
 			let planes = [];
+			let currentSlide = 0;
 
         init();
         render();
@@ -103,27 +104,44 @@
           const loadManager = new THREE.LoadingManager();
           const loader = new THREE.TextureLoader(loadManager);
 
+					var geometry = new THREE.PlaneGeometry( 44,34 );
+					renderer = new THREE.WebGLRenderer({antialias:true});
+					document.body.appendChild (renderer.domElement);
+					camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.01, 1000 );
+					scene = new THREE.Scene();
 
-          materials.push(
-            new THREE.MeshBasicMaterial({map: loader.load('materials/00/00_00.jpg'), side: THREE.DoubleSide, transparent: true}),
-            new THREE.MeshBasicMaterial({map: loader.load('materials/00/00_01.jpg'), side: THREE.DoubleSide, transparent: true})
-					);
+					var light = new THREE.AmbientLight( 0xffffff ); // soft white light
+					scene.add( light );
 
-          renderer = new THREE.WebGLRenderer( );
-					camera = new THREE.PerspectiveCamera( 65, window.innerWidth / window.innerHeight, 0.01, 1000 );
+			for (let j = 0; j < 30; j++){
+					let material = new THREE.MeshLambertMaterial({map: loader.load('materials/0/' + j.toString() + '.jpg'), side: THREE.DoubleSide, transparent: true});
+					material.map.minFilter = THREE.LinearFilter;
+					let plane = new THREE.Mesh( geometry, material );
+					materials.push(material)
+					planes.push(plane)
+					plane.position.set (scene.position.x, scene.position.y, -100 * ( j + 1 ));
+					scene.add(plane)
+			}
 
-          loadManager.onLoad = () => {
+			loadManager.onLoad = () => {
 
-            renderer.setSize( window.innerWidth, window.innerHeight );
-            window.addEventListener('resize', ()=>{
-              renderer.setSize( window.innerWidth, window.innerHeight );
-              camera.aspect = window.innerWidth / window.innerHeight
-              camera.updateProjectionMatrix()
-            })
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				window.addEventListener('resize', ()=>{
+					renderer.setSize( window.innerWidth, window.innerHeight );
+					camera.aspect = window.innerWidth / window.innerHeight
+					camera.updateProjectionMatrix()
+				})
 
-            document.body.appendChild (renderer.domElement);
+			// for (let i = 0; i < materials.length; i++){
+				// let material = new THREE.MeshBasicMaterial( { map: texture } );
+				// scene.add( plane );
+				// planes.push(plane)
+				// rotateAboutPoint(plane, origin, originAxis, (i+1) * Math.PI / 8, true);
+				// }
 
-            scene = new THREE.Scene();
+
+
+
 
 						for (let i = 0; i < 200; i ++){
 							var geometry = new THREE.SphereBufferGeometry( 1, 16, 16 );
@@ -132,14 +150,14 @@
 							scene.add( sphere );
 							var plusOrMinus = Math.random() < 0.5 ? false : true;
 							if (plusOrMinus){
-								sphere.position.z = -Math.random()*1000
-								sphere.position.y = Math.random()*1000
-								sphere.position.x = Math.random()*1000
+								sphere.position.z = -Math.random()*2000
+								sphere.position.y = Math.random()*2000
+								sphere.position.x = Math.random()*2000
 
 							}else{
-								sphere.position.z = Math.random()*1000
-								sphere.position.y = Math.random()*1000
-								sphere.position.x = Math.random()*1000
+								sphere.position.z = Math.random()*2000
+								sphere.position.y = Math.random()*2000
+								sphere.position.x = Math.random()*2000
 							}
 						}
 
@@ -150,14 +168,14 @@
 							scene.add( sphere );
 							var plusOrMinus = Math.random() < 0.5 ? false : true;
 							if (plusOrMinus){
-								sphere.position.z = -Math.random()*1000
-								sphere.position.y = Math.random()*1000
-								sphere.position.x = -Math.random()*1000
+								sphere.position.z = -Math.random()*2000
+								sphere.position.y = Math.random()*2000
+								sphere.position.x = -Math.random()*2000
 
 							}else{
-								sphere.position.z = Math.random()*1000
-								sphere.position.y = Math.random()*1000
-								sphere.position.x = -Math.random()*1000
+								sphere.position.z = Math.random()*2000
+								sphere.position.y = Math.random()*2000
+								sphere.position.x = -Math.random()*2000
 							}
 						}
 
@@ -166,25 +184,13 @@
             let origin = new THREE.Vector3(0,0,0);
             let originAxis = new THREE.Vector3(0,1,0);
 
-            // for (let i = 0; i < materials.length; i++){
-              // let material = new THREE.MeshBasicMaterial( { map: texture } );
-              var geometry = new THREE.PlaneGeometry( 30,30, 64 );
-              var plane = new THREE.Mesh( geometry, materials[0] );
-              plane.position.set (scene.position.x, scene.position.y, -100);
-              scene.add( plane );
-							planes.push(plane)
-              // rotateAboutPoint(plane, origin, originAxis, (i+1) * Math.PI / 8, true);
-              // }
-
-
-
-              var radius = 1000;
+              var radius = 10000;
               var radials = 16;
-              var circles = 20;
+              var circles = 200;
               var divisions = 64;
 
               var polarGrid = new THREE.PolarGridHelper( radius, radials, circles, divisions);
-              polarGrid.position.set(0, -10, 0);
+              polarGrid.position.set(0, -20, 0);
               scene.add( polarGrid );
           };
 
@@ -196,7 +202,6 @@
                zoomLevel += 1;
 								 let opac = scale(camera.position.distanceTo(planes[0].position), 0,40,0,1)
 							 materials[0].opacity = opac;
-							 console.log(opac)
                if (zoomLevel === 0){
                  rot = true;
                } else {
@@ -239,7 +244,6 @@
 
       function render()
       {
-				console.log(materials[0].opacity);
         requestAnimationFrame ( render );
         renderer.render (scene, camera);
       }
