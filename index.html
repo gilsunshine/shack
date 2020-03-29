@@ -68,6 +68,8 @@
       let rot = true;
       let zoomLevel = 0;
       let zoomSpeed = 20;
+			let materials = [];
+			let planes = [];
 
         init();
         render();
@@ -89,6 +91,11 @@
 
         obj.rotateOnAxis(axis, theta); // rotate the OBJECT
     }
+		function scale(num, in_min, in_max, out_min, out_max) {
+			return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+	}
+
+
 
       function init()
       {
@@ -97,10 +104,10 @@
           const loader = new THREE.TextureLoader(loadManager);
 
 
-          const materials = [
-            new THREE.MeshBasicMaterial({map: loader.load('materials/00/00_00.jpg'), side: THREE.DoubleSide}),
-            new THREE.MeshBasicMaterial({map: loader.load('materials/00/00_01.jpg'), side: THREE.DoubleSide})
-          ];
+          materials.push(
+            new THREE.MeshBasicMaterial({map: loader.load('materials/00/00_00.jpg'), side: THREE.DoubleSide, transparent: true}),
+            new THREE.MeshBasicMaterial({map: loader.load('materials/00/00_01.jpg'), side: THREE.DoubleSide, transparent: true})
+					);
 
           renderer = new THREE.WebGLRenderer( );
 					camera = new THREE.PerspectiveCamera( 65, window.innerWidth / window.innerHeight, 0.01, 1000 );
@@ -165,8 +172,12 @@
               var plane = new THREE.Mesh( geometry, materials[0] );
               plane.position.set (scene.position.x, scene.position.y, -100);
               scene.add( plane );
+							planes.push(plane)
               // rotateAboutPoint(plane, origin, originAxis, (i+1) * Math.PI / 8, true);
               // }
+
+
+
               var radius = 1000;
               var radials = 16;
               var circles = 20;
@@ -183,6 +194,9 @@
              if (keyCode === 87) {
                camera.translateZ(-zoomSpeed)
                zoomLevel += 1;
+								 let opac = scale(camera.position.distanceTo(planes[0].position), 0,40,0,1)
+							 materials[0].opacity = opac;
+							 console.log(opac)
                if (zoomLevel === 0){
                  rot = true;
                } else {
@@ -192,6 +206,8 @@
                if (zoomLevel > 0){
                  camera.translateZ(zoomSpeed)
                  zoomLevel -=  1;
+								 let opac = scale(camera.position.distanceTo(planes[0].position), 0,40,0,1)
+								 materials[0].opacity = opac;
                }
                if (zoomLevel === 0){
                  rot = true;
@@ -215,12 +231,15 @@
             camera.translateZ(zoomLevel * zoomSpeed)
             zoomLevel = 0;
             rot = true;
+						materials[0].opacity = 1;
           }
 
       }
 
+
       function render()
       {
+				console.log(materials[0].opacity);
         requestAnimationFrame ( render );
         renderer.render (scene, camera);
       }
