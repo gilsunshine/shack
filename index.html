@@ -1,0 +1,229 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<!-- <link rel="stylesheet" type="text/css" href="index.css"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#000000">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
+    <!--
+      manifest.json provides metadata used when your web app is added to the
+      homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
+    -->
+    <!-- <link rel="manifest" href="%PUBLIC_URL%/manifest.json"> -->
+    <link rel="shortcut icon" href="favicon.png">
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>Shackleton's Hut</title>
+		<style>
+		body {
+				margin: 0;
+				padding: 0;
+				/* font-family: sans-serif; */
+				}
+			/* canvas { display: block; } */
+			/* @font-face {
+				font-family: robMon;
+				src: url(https://fonts.googleapis.com/css?family=Roboto+Mono);
+			} */
+
+			.textStyle {
+			  color: #505050;
+				font-family: 'Roboto Mono', monospace;
+			  font-size: 0.8em;
+			}
+
+			.divStyle {
+			  display: flex;
+			  flex-direction: column;
+			  position: absolute;
+			  margin: 2%;
+			  padding: 1%;
+			  /* background-color: #eee; */
+			  z-index: 300;
+			  width: 15%;
+			}
+		</style>
+	</head>
+
+
+	<body>
+		<div class="divStyle textStyle">
+		        <div> <strong>Instructions</strong>
+		        <p>Use W, A, S and D keys to rotate view and to zoom.</p><div></div>
+		        <p>Click on the screen to return to origin.</p>
+		        <!-- <p>Click on the instructions to hide them.</p>  -->
+					</div>
+		</div>
+
+		<script src="three.js"></script>
+		<script>
+      var scene, renderer, camera;
+      let rot = true;
+      let zoomLevel = 0;
+      let zoomSpeed = 20;
+
+        init();
+        render();
+
+      function rotateAboutPoint(obj, point, axis, theta, pointIsWorld){
+        pointIsWorld = (pointIsWorld === undefined)? false : pointIsWorld;
+
+        if(pointIsWorld){
+            obj.parent.localToWorld(obj.position); // compensate for world coordinate
+        }
+
+        obj.position.sub(point); // remove the offset
+        obj.position.applyAxisAngle(axis, theta); // rotate the POSITION
+        obj.position.add(point); // re-add the offset
+
+        if(pointIsWorld){
+            obj.parent.worldToLocal(obj.position); // undo world coordinates compensation
+        }
+
+        obj.rotateOnAxis(axis, theta); // rotate the OBJECT
+    }
+
+      function init()
+      {
+
+          const loadManager = new THREE.LoadingManager();
+          const loader = new THREE.TextureLoader(loadManager);
+
+
+          const materials = [
+            new THREE.MeshBasicMaterial({map: loader.load('materials/00/00_00.jpg'), side: THREE.DoubleSide}),
+            new THREE.MeshBasicMaterial({map: loader.load('materials/00/00_01.jpg'), side: THREE.DoubleSide})
+          ];
+
+          renderer = new THREE.WebGLRenderer( );
+					camera = new THREE.PerspectiveCamera( 65, window.innerWidth / window.innerHeight, 0.01, 1000 );
+
+          loadManager.onLoad = () => {
+
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            window.addEventListener('resize', ()=>{
+              renderer.setSize( window.innerWidth, window.innerHeight );
+              camera.aspect = window.innerWidth / window.innerHeight
+              camera.updateProjectionMatrix()
+            })
+
+            document.body.appendChild (renderer.domElement);
+
+            scene = new THREE.Scene();
+
+						for (let i = 0; i < 200; i ++){
+							var geometry = new THREE.SphereBufferGeometry( 1, 16, 16 );
+							var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+							var sphere = new THREE.Mesh( geometry, material );
+							scene.add( sphere );
+							var plusOrMinus = Math.random() < 0.5 ? false : true;
+							if (plusOrMinus){
+								sphere.position.z = -Math.random()*1000
+								sphere.position.y = Math.random()*1000
+								sphere.position.x = Math.random()*1000
+
+							}else{
+								sphere.position.z = Math.random()*1000
+								sphere.position.y = Math.random()*1000
+								sphere.position.x = Math.random()*1000
+							}
+						}
+
+						for (let i = 0; i < 200; i ++){
+							var geometry = new THREE.SphereBufferGeometry( 1, 16, 16 );
+							var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+							var sphere = new THREE.Mesh( geometry, material );
+							scene.add( sphere );
+							var plusOrMinus = Math.random() < 0.5 ? false : true;
+							if (plusOrMinus){
+								sphere.position.z = -Math.random()*1000
+								sphere.position.y = Math.random()*1000
+								sphere.position.x = -Math.random()*1000
+
+							}else{
+								sphere.position.z = Math.random()*1000
+								sphere.position.y = Math.random()*1000
+								sphere.position.x = -Math.random()*1000
+							}
+						}
+
+            var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+            scene.add( light );
+            let origin = new THREE.Vector3(0,0,0);
+            let originAxis = new THREE.Vector3(0,1,0);
+
+            // for (let i = 0; i < materials.length; i++){
+              // let material = new THREE.MeshBasicMaterial( { map: texture } );
+              var geometry = new THREE.PlaneGeometry( 30,30, 64 );
+              var plane = new THREE.Mesh( geometry, materials[0] );
+              plane.position.set (scene.position.x, scene.position.y, -100);
+              scene.add( plane );
+              // rotateAboutPoint(plane, origin, originAxis, (i+1) * Math.PI / 8, true);
+              // }
+              var radius = 1000;
+              var radials = 16;
+              var circles = 20;
+              var divisions = 64;
+
+              var polarGrid = new THREE.PolarGridHelper( radius, radials, circles, divisions);
+              polarGrid.position.set(0, -10, 0);
+              scene.add( polarGrid );
+          };
+
+          document.addEventListener("keydown", onDocumentKeyDown, false)
+           function onDocumentKeyDown(event) {
+             let keyCode = event.which
+             if (keyCode === 87) {
+               camera.translateZ(-zoomSpeed)
+               zoomLevel += 1;
+               if (zoomLevel === 0){
+                 rot = true;
+               } else {
+                 rot = false;
+               }
+             } else if (keyCode === 83) {
+               if (zoomLevel > 0){
+                 camera.translateZ(zoomSpeed)
+                 zoomLevel -=  1;
+               }
+               if (zoomLevel === 0){
+                 rot = true;
+               } else {
+                 rot = false;
+               }
+             }
+
+             else if (keyCode === 65 && rot) {
+               camera.rotation.y += Math.PI / 8
+             }
+             else if (keyCode === 68 && rot) {
+               camera.rotation.y -= Math.PI / 8
+             }
+           }
+
+
+          document.addEventListener("click", returnOrigin);
+
+          function returnOrigin() {
+            camera.translateZ(zoomLevel * zoomSpeed)
+            zoomLevel = 0;
+            rot = true;
+          }
+
+      }
+
+      function render()
+      {
+        requestAnimationFrame ( render );
+        renderer.render (scene, camera);
+      }
+		</script>
+	</body>
+</html>
