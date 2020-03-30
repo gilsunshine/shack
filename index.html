@@ -113,13 +113,13 @@
 					var light = new THREE.AmbientLight( 0xffffff ); // soft white light
 					scene.add( light );
 
-			for (let j = 0; j < 30; j++){
+			for (let j = 1; j < 30; j++){
 					let material = new THREE.MeshLambertMaterial({map: loader.load('materials/0/' + j.toString() + '.jpg'), side: THREE.DoubleSide, transparent: true});
 					material.map.minFilter = THREE.LinearFilter;
 					let plane = new THREE.Mesh( geometry, material );
 					materials.push(material)
 					planes.push(plane)
-					plane.position.set (scene.position.x, scene.position.y, -100 * ( j + 1 ));
+					plane.position.set (scene.position.x, scene.position.y, -80 * ( j + 1 ));
 					scene.add(plane)
 			}
 
@@ -144,7 +144,7 @@
 
 
 						for (let i = 0; i < 200; i ++){
-							var geometry = new THREE.SphereBufferGeometry( 1, 16, 16 );
+							var geometry = new THREE.SphereBufferGeometry( 2, 16, 16 );
 							var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
 							var sphere = new THREE.Mesh( geometry, material );
 							scene.add( sphere );
