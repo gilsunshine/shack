@@ -28,13 +28,7 @@
 		body {
 				margin: 0;
 				padding: 0;
-				/* font-family: sans-serif; */
 				}
-			/* canvas { display: block; } */
-			/* @font-face {
-				font-family: robMon;
-				src: url(https://fonts.googleapis.com/css?family=Roboto+Mono);
-			} */
 
 			.textStyle {
 			  color: #505050;
@@ -81,49 +75,55 @@
       function rotateAboutPoint(obj, point, axis, theta, pointIsWorld){
         pointIsWorld = (pointIsWorld === undefined)? false : pointIsWorld;
 
-        if(pointIsWorld){
-            obj.parent.localToWorld(obj.position); // compensate for world coordinate
-        }
+	        if(pointIsWorld){
+	            obj.parent.localToWorld(obj.position); // compensate for world coordinate
+	        }
 
-        obj.position.sub(point); // remove the offset
-        obj.position.applyAxisAngle(axis, theta); // rotate the POSITION
-        obj.position.add(point); // re-add the offset
+	        obj.position.sub(point); // remove the offset
+	        obj.position.applyAxisAngle(axis, theta); // rotate the POSITION
+	        obj.position.add(point); // re-add the offset
 
-        if(pointIsWorld){
-            obj.parent.worldToLocal(obj.position); // undo world coordinates compensation
-        }
+	        if(pointIsWorld){
+	            obj.parent.worldToLocal(obj.position); // undo world coordinates compensation
+	        }
 
-        obj.rotateOnAxis(axis, theta); // rotate the OBJECT
-    }
-		function scale(num, in_min, in_max, out_min, out_max) {
-			return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-	}
+	        obj.rotateOnAxis(axis, theta); // rotate the OBJECT
+	    		}
+
+					function scale(num, in_min, in_max, out_min, out_max) {
+						return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+				}
 
 
 
       function init()
       {
-
-          const loadManager = new THREE.LoadingManager();
-          const loader = new THREE.TextureLoader(loadManager);
-
-					var geometry = new THREE.PlaneGeometry( 44,34 );
 					renderer = new THREE.WebGLRenderer({antialias:true});
 					document.body.appendChild (renderer.domElement);
 					camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.01, 1000 );
 					scene = new THREE.Scene();
-
 					var light = new THREE.AmbientLight( 0xffffff ); // soft white light
 					scene.add( light );
 
-			for (let j = 1; j < 30; j++){
-					let material = new THREE.MeshLambertMaterial({map: loader.load('materials/0/' + j.toString() + '.jpg'), side: THREE.DoubleSide, transparent: true});
+//*******************SLIDES*********
+			const loadManager = new THREE.LoadingManager();
+			const loader = new THREE.TextureLoader(loadManager);
+			var geometry = new THREE.PlaneGeometry( 44,34 );
+			let origin = new THREE.Vector3(0,0,0);
+			let originAxis = new THREE.Vector3(0,1,0);
+
+			for (let i = 1; i<17; i++){
+				for (let j = 1; j < 30; j++){
+					planes.push([])
+					let material = new THREE.MeshLambertMaterial({map: loader.load('materials/' + i.toString() + '/' + j.toString() + '.jpg'), side: THREE.DoubleSide, transparent: true});
 					material.map.minFilter = THREE.LinearFilter;
 					let plane = new THREE.Mesh( geometry, material );
 					materials.push(material)
-					planes.push(plane)
+					planes[i-1].push(plane)
 					plane.position.set (scene.position.x, scene.position.y, -80 * ( j + 1 ));
 					scene.add(plane)
+					rotateAboutPoint(plane, origin, originAxis, (i-1) * Math.PI / 8, true);
+				}
 			}
 
 			loadManager.onLoad = () => {
@@ -135,6 +135,8 @@
 					camera.updateProjectionMatrix()
 				})
 
+
+
 			// for (let i = 0; i < materials.length; i++){
 				// let material = new THREE.MeshBasicMaterial( { map: texture } );
 				// scene.add( plane );
@@ -143,8 +145,7 @@
 				// }
 
 
-
-
+//*************STARS**************
 
 						for (let i = 0; i < 200; i ++){
 							var geometry = new THREE.SphereBufferGeometry( 2, 16, 16 );
@@ -182,10 +183,7 @@
 							}
 						}
 
-            var light = new THREE.AmbientLight( 0x404040 ); // soft white light
-            scene.add( light );
-            let origin = new THREE.Vector3(0,0,0);
-            let originAxis = new THREE.Vector3(0,1,0);
+//*****************GRID****************
 
               var radius = 10000;
               var radials = 16;
@@ -197,25 +195,28 @@
               scene.add( polarGrid );
           };
 
+//*******************INTERFACE******************
+
           document.addEventListener("keydown", onDocumentKeyDown, false)
            function onDocumentKeyDown(event) {
              let keyCode = event.which
              if (keyCode === 87) {
                camera.translateZ(-zoomSpeed)
                zoomLevel += 1;
-								 let opac = scale(camera.position.distanceTo(planes[0].position), 0,40,0,1)
-							 materials[0].opacity = opac;
+							// let opac = scale(camera.position.distanceTo(planes[0].position), 0,40,0,1)
+							 // materials[0].opacity = opac;
                if (zoomLevel === 0){
                  rot = true;
                } else {
                  rot = false;
+								 console.log(rot)
                }
              } else if (keyCode === 83) {
                if (zoomLevel > 0){
                  camera.translateZ(zoomSpeed)
                  zoomLevel -=  1;
-								 let opac = scale(camera.position.distanceTo(planes[0].position), 0,40,0,1)
-								 materials[0].opacity = opac;
+								 // let opac = scale(camera.position.distanceTo(planes[0].position), 0,40,0,1)
+								 // materials[0].opacity = opac;
                }
                if (zoomLevel === 0){
                  rot = true;
@@ -244,9 +245,10 @@
 
       }
 
-
+//**************RENDER*************
       function render()
       {
+
         requestAnimationFrame ( render );
         renderer.render (scene, camera);
       }
